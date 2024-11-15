@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "biodigit-encryption-expo": ["../src/index"],
+      "biodigit-encryption-expo/*": ["../src/*"]
+    }
+  }
+}

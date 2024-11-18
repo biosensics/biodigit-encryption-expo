@@ -8,7 +8,7 @@ import { Button, View } from 'react-native';
 import { getSealdSDKInstance } from './seald';
 
 export default function App() {
-  const encryptionToken = process.env.EXPO_PUBLIC_GET_KEYS_TOKEN
+  const encryptionToken = process.env.EXPO_PUBLIC_ENCRYPTION_TOKEN 
   const getKeysToken = process.env.EXPO_PUBLIC_GET_KEYS_TOKEN
   const sealdGroupId = process.env.EXPO_PUBLIC_SEALD_ID
 

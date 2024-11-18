@@ -40,6 +40,22 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform,
     );
   }
+
+  if (moduleName === 'stream') {
+    return context.resolveRequest(
+      context,
+      'readable-stream',
+      platform,
+    )
+  }
+  if (moduleName === 'buffer') {
+    return context.resolveRequest(
+      context,
+      '@craftzdog/react-native-buffer',
+      platform,
+    )
+  }
+  
   // otherwise chain to the standard Metro resolver.
   return context.resolveRequest(context, moduleName, platform);
 };

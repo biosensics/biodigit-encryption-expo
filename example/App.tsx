@@ -1,3 +1,6 @@
+import { Buffer } from '@craftzdog/react-native-buffer';
+global.Buffer = Buffer as any;
+
 import {encrypt} from 'biodigit-encryption-expo';
 import {AnonymousEncryptionSession} from '@seald-io/sdk/lib/anonymous.js';
 import { useCallback, useMemo, useState } from 'react';

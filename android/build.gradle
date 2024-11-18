@@ -41,3 +41,8 @@ android {
     abortOnError false
   }
 }
+
+dependencies {
+  implementation("org.mongodb:bson:4.10.1") // For BSON serialization
+  implementation("org.apache.commons:commons-compress:1.21") // For TAR file creation
+}

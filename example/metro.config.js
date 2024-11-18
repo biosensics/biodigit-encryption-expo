@@ -31,4 +31,34 @@ config.transformer.getTransformOptions = async () => ({
   },
 });
 
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'crypto') {
+    // when importing crypto, resolve to react-native-quick-crypto
+    return context.resolveRequest(
+      context,
+      'react-native-quick-crypto',
+      platform,
+    );
+  }
+
+  if (moduleName === 'stream') {
+    return context.resolveRequest(
+      context,
+      'readable-stream',
+      platform,
+    )
+  }
+  if (moduleName === 'buffer') {
+    return context.resolveRequest(
+      context,
+      '@craftzdog/react-native-buffer',
+      platform,
+    )
+  }
+  
+  // otherwise chain to the standard Metro resolver.
+  return context.resolveRequest(context, moduleName, platform);
+};
+
+
 module.exports = config;

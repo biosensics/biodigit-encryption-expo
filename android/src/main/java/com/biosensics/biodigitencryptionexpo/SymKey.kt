@@ -10,7 +10,9 @@ import java.security.SecureRandom
 import java.util.Base64
 
 class SymKey(val key: ByteArray) {
-    val keySize: Int = key.size * 8
+    val keySize: Int = key.size * 4 // actually, it should be *8 (bits per byte) /2 (for encryption key + hmac key)
+    val authenticationKey = key.copyOfRange(0, key.size / 2)
+    val encryptionKey = key.copyOfRange(key.size / 2, key.size)
 
     init {
         require(keySize == 128 || keySize == 192 || keySize == 256) { "INVALID_ARG : Key size is invalid" }
@@ -19,7 +21,7 @@ class SymKey(val key: ByteArray) {
     companion object {
         // Generate a new AES key
         fun generate(size: Int = 256): SymKey {
-            val key = ByteArray(size / 8)
+            val key = ByteArray(size / 4)
             SecureRandom().nextBytes(key)
             return SymKey(key)
         }
@@ -33,7 +35,7 @@ class SymKey(val key: ByteArray) {
     // Utility method to calculate HMAC
     private fun calculateHMAC(data: ByteArray): ByteArray {
         val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(key, "HmacSHA256"))
+        mac.init(SecretKeySpec(authenticationKey, "HmacSHA256"))
         return mac.doFinal(data)
     }
 
@@ -48,7 +50,7 @@ class SymKey(val key: ByteArray) {
 
         // Initialize cipher for encryption
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(encryptionKey, "AES"), IvParameterSpec(iv))
 
         // Encrypt data
         val cipherText = cipher.doFinal(clearText)
@@ -73,7 +75,7 @@ class SymKey(val key: ByteArray) {
 
         // Initialize cipher for decryption
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(encryptionKey, "AES"), IvParameterSpec(iv))
 
         // Decrypt data
         return cipher.doFinal(cipherText)
@@ -85,14 +87,14 @@ class SymKey(val key: ByteArray) {
         val iv = ByteArray(16)
         SecureRandom().nextBytes(iv)
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(encryptionKey, "AES"), IvParameterSpec(iv))
 
         // Write the IV to the output stream first
         outputStream.write(iv)
 
         // Wrap the output stream with HMAC calculation
         val hmac = Mac.getInstance("HmacSHA256")
-        hmac.init(SecretKeySpec(key, "HmacSHA256"))
+        hmac.init(SecretKeySpec(authenticationKey, "HmacSHA256"))
         hmac.update(iv) // add IV to HMAC
 
         // Use CipherOutputStream to handle encryption
@@ -119,12 +121,12 @@ class SymKey(val key: ByteArray) {
         if (inputStream.read(iv) != iv.size) throw IllegalArgumentException("Invalid IV size")
 
         val hmac = Mac.getInstance("HmacSHA256")
-        hmac.init(SecretKeySpec(key, "HmacSHA256"))
+        hmac.init(SecretKeySpec(authenticationKey, "HmacSHA256"))
         hmac.update(iv)
 
         // Cipher for decryption
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(encryptionKey, "AES"), IvParameterSpec(iv))
 
         // Use a buffer to keep track of the last 32 bytes for HMAC
         val hmacBuffer = ByteArray(32)

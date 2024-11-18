@@ -15,14 +15,11 @@ class BioDigitEncryptionExpoModule : Module() {
     Name("BioDigitEncryptionExpo")
 
 
-    AsyncFunction("encrypt") { session: String, path: String, promise: Promise ->
+    AsyncFunction("encrypt") { path: String, keyB64: String, promise: Promise ->
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // get aq byte array from the session
-                val sessionByteArray = session.toByteArray()
-
                 // make a new SymKey instance
-                val key = SymKey(sessionByteArray)
+                val key = SymKey.fromB64(keyB64)
 
                 val fileName = path.substringAfterLast("/")
 

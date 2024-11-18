@@ -1,5 +1,5 @@
 import BioDigitEncryptionExpoModule from './BioDigitEncryptionExpoModule';
 
-export function encrypt(session: string, path: string): Promise<string> {
-  return BioDigitEncryptionExpoModule.encrypt(session, path);
+export function encrypt(path: string, session: {_sessionSymKey: {toB64: () => string}}): Promise<string> {
+  return BioDigitEncryptionExpoModule.encrypt(path, session._sessionSymKey.toB64());
 }
